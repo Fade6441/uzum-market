@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+
+{% block nimadur %} Mahsulotlar {% endblock %}
+
+{% block content %}
+<div class="container text-center">
+    <div class="row">
+        {% for product in products %}
+
+        <div class="col-4">
+            <div class="card">
+                <img src="{{ product.first_image.image.url }}" class="card-img-top imgw" alt="...">
+                <div class="card-body">
+
+                    {% for color in product.colors.all %}
+                    <p>{{ color.name }}</p>
+                    {% endfor %}
+
+                    <p class="card-text">{{ product.name }}</p>
+                    <button class="btn btn-primary add-to-cart" data-product-id="{{ product.id }}">
+                        Add to Cart
+                    </button>
+                    {% for product in user_cart %}
+                    <button type="submit" class="btn">
+                        <i class="bi bi-trash3-fill"></i>
+                    </button>
+                    {% endfor %}
+
+                </div>
+                
+            </div>
+
+            <a href="{% url 'product_detail' product.id  %}">Batafsil...</a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block jscode %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+
+<script src=”https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js”></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.add-to-cart').forEach(function (button) {
+            button.addEventListener('click', function () {
+
+                var csrftoken = '{{ csrf_token }}';
+                const productId = this.getAttribute('data-product-id');
+
+                console.log(productId);
+
+                fetch('/add-to-cart/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken,
+                    },
+                    body: JSON.stringify({
+                        product_id: productId,
+                        quantity: 1
+                    })
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status == 'okey') {
+                            alert('Product added to cart successfully!');
+                        } else {
+                            alert('There was an error adding the product to the cart.');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                    });
+            });
+        });
+    });
+</script>
+{% endblock %}
